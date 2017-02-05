@@ -9,7 +9,7 @@ class FSM {
             this.states = config.states;
             this.configInitial = config.initial;
             this.statesHistory = [];
-            this.nextState = null;
+            this.nextStatesHistory = [];
         } else {
             throw new Error("Config is undefined");
         }
@@ -29,6 +29,7 @@ class FSM {
      */
     changeState(state) {
         if (state in this.states) {
+            this.nextStatesHistory = [];
             this.statesHistory.push(this.currentState);
             this.currentState = state;
         } else {
@@ -42,6 +43,7 @@ class FSM {
      */
     trigger(event) {
         if (event in this.states[this.currentState].transitions) {
+            this.nextStatesHistory = [];
             this.statesHistory.push(this.currentState);
             this.currentState = this.states[this.currentState].transitions[event];
         } else {
@@ -86,7 +88,7 @@ class FSM {
      */
     undo() {
         if (this.statesHistory.length > 0) {
-            this.nextState = this.currentState;
+            this.nextStatesHistory.push(this.currentState);
             this.currentState = this.statesHistory.pop();
             return true;
         } else {
@@ -100,8 +102,10 @@ class FSM {
      * @returns {Boolean}
      */
     redo() {
-        if (this.nextState != 0) {
-            this.currentState = this.nextState;
+        if (this.nextStatesHistory.length > 0) {
+            this.statesHistory.push(this.currentState);
+            this.currentState = this.nextStatesHistory.pop();
+            return true;
         } else {
             return false;
         }
@@ -111,6 +115,7 @@ class FSM {
      * Clears transition history
      */
     clearHistory() {
+        this.nextStatesHistory = [];
         this.statesHistory = [];
     }
 }
